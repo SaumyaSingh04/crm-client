@@ -129,7 +129,7 @@ const AddLead = () => {
             />
           </svg>
         </button>
-        <h2 className="text-2xl font-bold">Add New Lead</h2>
+        <h2 className="text-2xl font-bold">Add New Leads</h2>
       </div>
 
       {error && (
