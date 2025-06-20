@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
+import { FaChevronDown } from "react-icons/fa";
 
 function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useAppContext();
+  const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
 
   return (
     <div
@@ -11,7 +14,7 @@ function Sidebar() {
       }`}
     >
       <div className="p-4 relative">
-        {/* Close button - only visible on mobile when sidebar is open */}
+        {/* Close button */}
         <button
           onClick={toggleSidebar}
           className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-700 md:hidden"
@@ -36,42 +39,53 @@ function Sidebar() {
         <nav>
           <ul className="space-y-2">
             <li>
-              <Link
-                to="/"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
-              >
+              <Link to="/" className="block py-2 px-4 rounded hover:bg-gray-700">
                 Dashboard
               </Link>
             </li>
             <li>
-              <Link
-                to="/leads"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
-              >
+              <Link to="/leads" className="block py-2 px-4 rounded hover:bg-gray-700">
                 Lead Management
               </Link>
             </li>
             <li>
-              <Link
-                to="/projects"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
-              >
+              <Link to="/projects" className="block py-2 px-4 rounded hover:bg-gray-700">
                 Project Management
               </Link>
             </li>
+
+            {/* Employee Dropdown */}
             <li>
-              <Link
-                to="/employees"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
+              <button
+                onClick={() => setEmployeeDropdownOpen(!employeeDropdownOpen)}
+                className="flex items-center justify-between w-full py-2 px-4 rounded hover:bg-gray-700"
               >
-                Employee Management
-              </Link>
+                <span>Employee Management</span>
+                <FaChevronDown className={`transition-transform ${employeeDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              {employeeDropdownOpen && (
+                <ul className="ml-6 mt-1 space-y-1">
+                  <li>
+                    <Link to="/employees" className="block text-md text-orange-400 hover:text-white">
+                      • Employee List
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/contracts" className="block text-md text-orange-400 hover:text-white">
+                      • Contract Agreement
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/employee/term_conditions" className="block text-md text-orange-400 hover:text-white">
+                      • Terms & Conditions
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
+
             <li>
-              <Link
-                to="/settings"
-                className="block py-2 px-4 rounded hover:bg-gray-700"
-              >
+              <Link to="/settings" className="block py-2 px-4 rounded hover:bg-gray-700">
                 Settings
               </Link>
             </li>

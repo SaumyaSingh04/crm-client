@@ -5,7 +5,9 @@ import Dashboard from "./components/Dashboard";
 import LeadManagement from "./pages/LeadManagement";
 import ProjectManagement from "./pages/ProjectManagement";
 import EmployeeManagement from "./pages/EmployeeManagement";
+import ContractManagement from "./pages/ContractManagement";
 import AddEmployee from "./pages/AddEmployee";
+import AddContract from "./pages/AddContract";
 import AddProject from "./pages/AddProject";
 import AddLead from "./pages/AddLead";
 import Login from "./pages/Login";
@@ -31,6 +33,8 @@ function AppRoutes() {
         <Route path="projects/add" element={<AddProject />} />
         <Route path="employees" element={<EmployeeManagement />} />
         <Route path="employees/add" element={<AddEmployee />} />
+        <Route path="contract/add" element={<AddContract />} />
+        <Route path="contracts" element={<ContractManagement />} />
       </Route>
     </Routes>
   );

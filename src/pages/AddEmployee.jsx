@@ -68,23 +68,37 @@ const AddEmployee = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_URL}/api/employees/${id}`);
-      const data = await response.json();
+      const json = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch employee data");
+      if (!response.ok || !json.success) {
+        throw new Error(json.message || "Failed to fetch employee data");
       }
 
-      // Format dates for form inputs
-      const formattedData = {
+      const data = json.data;
+
+      const formatted = {
         ...data,
         work_start_date: data.work_start_date
           ? new Date(data.work_start_date).toISOString().split("T")[0]
           : "",
+        salary_details: {
+          ...data.salary_details,
+        },
+        documents: {
+          resume: null,
+          offer_letter: null,
+          joining_letter: null,
+          other_docs: [],
+        },
+        work_experience: data.work_experience.map((exp) => ({
+          ...exp,
+          experience_letter: null,
+        })),
       };
 
-      setFormData(formattedData);
+      setFormData(formatted);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -125,12 +139,12 @@ const AddEmployee = () => {
   };
 
   const handleExperienceChange = (index, e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type } = e.target;
     const updatedExperiences = [...formData.work_experience];
 
     updatedExperiences[index] = {
       ...updatedExperiences[index],
-      [name]: files ? files[0] : value,
+      [name]: type === "file" ? files[0] : value,
     };
 
     setFormData((prev) => ({
@@ -170,97 +184,84 @@ const AddEmployee = () => {
       }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-  
+
     try {
+      console.log("profile_image:", formData.profile_image);
+console.log("aadhar_document:", formData.aadhar_document);
       const url = isEditMode
         ? `${API_URL}/api/employees/${employeeId}`
         : `${API_URL}/api/employees`;
       const method = isEditMode ? "PUT" : "POST";
-  
+
       const formPayload = new FormData();
-      
-      // Create a clean data object without files
-      const dataToSend = {
+
+      // Clean object (remove file references for JSON)
+      const cleanData = {
         ...formData,
-        // Remove file objects from nested structures
-        work_experience: formData.work_experience.map(exp => ({
+        work_experience: formData.work_experience.map((exp) => ({
           company_name: exp.company_name,
           role: exp.role,
-          duration: exp.duration
+          duration: exp.duration,
         })),
         salary_details: { ...formData.salary_details },
-        documents: {
-          resume: null,
-          offer_letter: null,
-          joining_letter: null,
-          other_docs: []
-        }
+        documents: {}, // only files go separately
       };
-  
-      // Append JSON data
-      formPayload.append('employeeData', JSON.stringify(dataToSend));
-      
-      // Helper function to append files safely
-      const appendFile = (fieldName, file) => {
-        if (file instanceof File) {
-          formPayload.append(fieldName, file);
-        }
-      };
-  
-      // Append single files
-      appendFile('profile_image', formData.profile_image);
-      appendFile('aadhar_document', formData.aadhar_document);
-      appendFile('pan_document', formData.pan_document);
-      
-      // Append document files
-      appendFile('resume', formData.documents?.resume);
-      appendFile('offer_letter', formData.documents?.offer_letter);
-      appendFile('joining_letter', formData.documents?.joining_letter);
-      
-      // Append other docs - handle array safely
-      if (Array.isArray(formData.documents?.other_docs)) {
-        formData.documents.other_docs.forEach(file => {
-          if (file instanceof File) {
-            formPayload.append('other_docs', file);
+
+      formPayload.append("employeeData", JSON.stringify(cleanData));
+
+      // Only send new files
+      if (formData.profile_image instanceof File)
+        formPayload.append("profile_image", formData.profile_image,);
+
+      if (formData.aadhar_document instanceof File)
+        formPayload.append("aadhar_document", formData.aadhar_document);
+
+      if (formData.pan_document instanceof File)
+        formPayload.append("pan_document", formData.pan_document);
+
+      if (formData.documents.resume instanceof File)
+        formPayload.append("resume", formData.documents.resume);
+
+      if (formData.documents.offer_letter instanceof File)
+        formPayload.append("offer_letter", formData.documents.offer_letter);
+
+      if (formData.documents.joining_letter instanceof File)
+        formPayload.append("joining_letter", formData.documents.joining_letter);
+
+      if (Array.isArray(formData.documents.other_docs)) {
+        formData.documents.other_docs.forEach((doc) => {
+          if (doc instanceof File) {
+            formPayload.append("other_docs", doc);
           }
         });
       }
-      
-      // Append work experience files
-      if (Array.isArray(formData.work_experience)) {
-        formData.work_experience.forEach((exp) => {
-          if (exp.experience_letter instanceof File) {
-            formPayload.append('experience_letter', exp.experience_letter);
-          }
-        });
-      }
-  
+
+      // Experience letters
+      formData.work_experience.forEach((exp, idx) => {
+        if (exp.experience_letter instanceof File) {
+          formPayload.append(`experience_letter_${idx}`, exp.experience_letter);
+        }
+      });
+
       const response = await fetch(url, {
         method,
         body: formPayload,
       });
-  
-      // Handle response
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server error: ${errorText.substring(0, 100)}`);
+
+      const res = await response.json();
+      if (!response.ok || !res.success) {
+        throw new Error(res.message || "Something went wrong");
       }
-  
-      const data = await response.json();
-      
-      if (data.success) {
-        navigate("/employees");
-      } else {
-        throw new Error(data.message || "Employee creation failed");
-      }
+
+      navigate("/employees");
     } catch (err) {
-      console.error("Submission error:", err);
-      setError(err.message || "An error occurred");
+      console.error("Error submitting employee:", err);
+      setError(err.message || "Submission failed");
     } finally {
       setLoading(false);
     }
