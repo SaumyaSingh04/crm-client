@@ -130,7 +130,8 @@ function EmployeeManagement() {
             <tr>
               {[
                 "ID", "Name", "Contact", "Email", "Profile", "City", "Aadhar", "PAN",
-                "Work Start", "Emp. Type", "Status", "Current", "Experience", "Salary", "Documents"
+                "Work Start", "Emp. Type", "Status","Experience", "Salary", "Documents"
+               // "Current"
               ].map((heading) => (
                 <th key={heading} className="px-6 py-3 text-left">{heading}</th>
               ))}
@@ -235,7 +236,7 @@ function EmployeeManagement() {
               </td>
             
               {/* Toggle Current */}
-              <td className="px-6 py-4 min-w-[72px]">
+              {/* <td className="px-6 py-4 min-w-[72px]">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -245,7 +246,7 @@ function EmployeeManagement() {
                   />
                   <div className="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-5 peer-checked:bg-green-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
                 </label>
-              </td>
+              </td> */}
             
               {/* View Buttons */}
               {[
