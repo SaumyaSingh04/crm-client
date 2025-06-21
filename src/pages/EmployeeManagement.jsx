@@ -84,7 +84,7 @@ function EmployeeManagement() {
   if (error) return <div className="p-6 text-red-600">{error}</div>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 overflow-x-hidden">
       {/* Search + Add Button */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
   <div className="relative flex-grow">
@@ -124,7 +124,8 @@ function EmployeeManagement() {
 
       {/* Table Container - Fixed horizontal scroll issue */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
-        <table className="w-full table-auto">
+      <div className="overflow-x-auto w-full bg-white dark:bg-gray-800 rounded-lg shadow">
+  <table className="min-w-[1200px] w-full table-auto">
           <thead className="bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
             <tr>
               {[
@@ -138,75 +139,138 @@ function EmployeeManagement() {
           <tbody className="text-sm divide-y divide-gray-200 dark:divide-gray-600">
             {employees.map((emp) => (
               <tr key={emp._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                {/* Editable cells */}
-                {[
-                  emp.employee_id, 
-                  emp.name,
-                  <div key={`contact-${emp._id}`}>{emp.contact1}<div className="text-xs text-gray-500">{emp.contact2}</div></div>,
-                  emp.email,
-                  emp.profile_image ? (
-                    <img 
-                      key={`profile-${emp._id}`}
-                      src={emp.profile_image} 
-                      alt="Profile" 
-                      className="w-10 h-10 rounded-full object-cover" 
-                    />
-                  ) : (
-                    <div 
-                      key={`profile-placeholder-${emp._id}`}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center"
-                    >
-                      <span className="text-xs text-gray-500">N/A</span>
-                    </div>                  
-                  ),
-                  emp.city, 
-                  emp.aadhar_number, 
-                  emp.pan_number,
-                  emp.work_start_date ? new Date(emp.work_start_date).toLocaleDateString() : "N/A",
-                  emp.employment_type,
-                  <div key={`status-${emp._id}`}>
-                    <span className={`px-2 py-1 rounded text-xs font-medium
-                      ${emp.employee_status === "Active" ? "bg-green-100 text-green-800" :
-                        emp.employee_status === "On Leave" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-red-100 text-red-800"}`}>
-                      {emp.employee_status}
-                    </span>
+              {/* ID */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.employee_id}
+              </td>
+            
+              {/* Name */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.name}
+              </td>
+            
+              {/* Contact */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                <div>
+                  {emp.contact1}
+                  <div className="text-xs text-gray-500">{emp.contact2}</div>
+                </div>
+              </td>
+            
+              {/* Email */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.email}
+              </td>
+            
+              {/* Profile */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.profile_image ? (
+                  <img src={emp.profile_image} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-xs text-gray-500">N/A</span>
                   </div>
-                ].map((cell, i) => (
-                  <td key={`${emp._id}-${i}`} className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
-                    {cell}
-                  </td>
-                ))}
+                )}
+              </td>
+            
+              {/* City */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.city}
+              </td>
+            
+              {/* Aadhaar */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+  <div className="flex flex-col">
+    <span>{emp.aadhar_number || "N/A"}</span>
+    {emp.aadhar_document?.url && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          window.open(emp.aadhar_document.url, "_blank");
+        }}
+        className="mt-1 w-fit text-xs bg-blue-400 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+      >
+        View Aadhaar
+      </button>
+    )}
+  </div>
+</td>
 
-                {/* Toggle Switch */}
-                <td className="px-6 py-4">
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={emp.is_current_employee}
-                      onChange={() => toggleCurrentStatus(emp._id, emp.is_current_employee)}
-                      className="sr-only peer"
-                    />
-                    <div className="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-5 peer-checked:bg-green-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-                  </label>
+              {/* PAN */}
+<td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+  <div className="flex flex-col">
+    <span>{emp.pan_number || "N/A"}</span>
+    {emp.pan_document?.url && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          window.open(emp.pan_document.url, "_blank");
+        }}
+        className="mt-1 w-fit text-xs bg-blue-400 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+      >
+        View PAN
+      </button>
+    )}
+  </div>
+</td>
+            
+              {/* Work Start Date */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.work_start_date ? new Date(emp.work_start_date).toLocaleDateString() : "N/A"}
+              </td>
+            
+              {/* Employment Type */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                {emp.employment_type}
+              </td>
+            
+              {/* Employee Status */}
+              <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
+                <span className={`px-2 py-1 rounded text-xs font-medium
+                  ${emp.employee_status === "Active" ? "bg-green-100 text-green-800" :
+                    emp.employee_status === "On Leave" ? "bg-yellow-100 text-yellow-800" :
+                      "bg-red-100 text-red-800"}`}>
+                  {emp.employee_status}
+                </span>
+              </td>
+            
+              {/* Toggle Current */}
+              <td className="px-6 py-4 min-w-[72px]">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emp.is_current_employee}
+                    onChange={() => toggleCurrentStatus(emp._id, emp.is_current_employee)}
+                    className="sr-only peer"
+                  />
+                  <div className="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-5 peer-checked:bg-green-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                </label>
+              </td>
+            
+              {/* View Buttons */}
+              {[
+                ["Experience", () => setSelectedExperience(emp.work_experience || [])],
+                ["Salary", () => setSelectedSalary(emp.salary_details || {})],
+                ["Docs", () => setSelectedDocuments(emp.documents || {})]
+              ].map(([label, handler]) => (
+                <td key={`${emp._id}-${label}`} className="px-6 py-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handler();
+                    }}
+                    className="text-blue-600 underline text-sm"
+                  >
+                    View {label}
+                  </button>
                 </td>
-
-                {/* View Buttons */}
-                {[
-                  ["Experience", () => setSelectedExperience(emp.work_experience || [])],
-                  ["Salary", () => setSelectedSalary(emp.salary_details || {})],
-                  ["Docs", () => setSelectedDocuments(emp.documents || {})]
-                ].map(([label, handler]) => (
-                  <td key={`${emp._id}-${label}`} className="px-6 py-4">
-                    <button onClick={(e) => { e.stopPropagation(); handler(); }} className="text-blue-600 underline text-sm">
-                      View {label}
-                    </button>
-                  </td>
-                ))}
-              </tr>
+              ))}
+            </tr>
+            
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination Controls */}
@@ -258,10 +322,17 @@ function EmployeeManagement() {
                   <p className="font-medium">{exp.company_name}</p>
                   <p className="text-gray-600">{exp.role}</p>
                   <p className="text-sm text-gray-500">{exp.duration}</p>
-                  {exp.experience_letter?.url && (
-                    <a href={exp.experience_letter.url} target="_blank" rel="noreferrer" className="text-blue-600 text-sm hover:underline inline-block mt-1">
+                  {exp.experience_letter?.url ? (
+                    <a 
+                      href={exp.experience_letter.url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-blue-600 text-sm hover:underline inline-block mt-1"
+                    >
                       View Experience Letter
                     </a>
+                  ) : (
+                    <p className="text-sm text-gray-500 mt-1">No experience letter</p>
                   )}
                 </div>
               ))}

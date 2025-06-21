@@ -85,6 +85,10 @@ const AddEmployee = () => {
           ...data.salary_details,
         },
         documents: {
+          resume_url: data.documents?.resume || null,
+          offer_letter_url: data.documents?.offer_letter || null,
+          joining_letter_url: data.documents?.joining_letter || null,
+          other_docs_urls: data.documents?.other_docs || [],
           resume: null,
           offer_letter: null,
           joining_letter: null,
@@ -92,7 +96,8 @@ const AddEmployee = () => {
         },
         work_experience: data.work_experience.map((exp) => ({
           ...exp,
-          experience_letter: null,
+          experience_letter_url: exp.experience_letter || null,
+    experience_letter: null,
         })),
       };
 
@@ -529,7 +534,27 @@ console.log("aadhar_document:", formData.aadhar_document);
               </div>
             </div>
           </div>
+          {/* {isEditMode && formData.aadhar_document?.url && (
+  <a
+    href={formData.aadhar_document.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-600 underline mt-1 block"
+  >
+    View Aadhaar Document
+  </a>
+)} */}
 
+{/* {isEditMode && formData.pan_document?.url && (
+  <a
+    href={formData.pan_document.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-600 underline mt-1 block"
+  >
+    View PAN Document
+  </a>
+)} */}
           {/* Employment Details Section */}
           <div>
             <h3 className="text-xl font-semibold mb-4 pb-2 border-b">
