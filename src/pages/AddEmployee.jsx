@@ -1,4 +1,3 @@
-// src/pages/AddEmployee.jsx
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useLocation } from "react-router-dom";
@@ -11,7 +10,6 @@ const AddEmployee = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [employeeId, setEmployeeId] = useState(null);
 
-  // Initialize form data structure
   const [formData, setFormData] = useState({
     employee_id: "",
     name: "",
@@ -32,7 +30,6 @@ const AddEmployee = () => {
     tenure: "",
     employment_type: "Full Time",
     is_current_employee: true,
-    work_experience: [],
     designation: "",
     department: "",
     reporting_manager: "",
@@ -44,19 +41,19 @@ const AddEmployee = () => {
       bank_name: "",
       pf_account_number: "",
     },
-    documents: {
+    work_experience: [],
+    documents: { 
       resume: null,
       offer_letter: null,
       joining_letter: null,
-      other_docs: [],
+      other_docs: [] 
     },
     notes: "",
   });
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const id = queryParams.get("id");
-
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
     if (id) {
       setIsEditMode(true);
       setEmployeeId(id);
@@ -65,45 +62,32 @@ const AddEmployee = () => {
   }, [location]);
 
   const fetchEmployeeData = async (id) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(`${API_URL}/api/employees/${id}`);
-      const json = await response.json();
-
-      if (!response.ok || !json.success) {
-        throw new Error(json.message || "Failed to fetch employee data");
-      }
-
+      const resp = await fetch(`${API_URL}/api/employees/${id}`);
+      const json = await resp.json();
+      if (!resp.ok || !json.success) throw new Error(json.message);
       const data = json.data;
-
-      const formatted = {
+      setFormData({
         ...data,
-        work_start_date: data.work_start_date
-          ? new Date(data.work_start_date).toISOString().split("T")[0]
-          : "",
-        salary_details: {
-          ...data.salary_details,
-        },
-        documents: {
-          resume_url: data.documents?.resume || null,
-          offer_letter_url: data.documents?.offer_letter || null,
-          joining_letter_url: data.documents?.joining_letter || null,
-          other_docs_urls: data.documents?.other_docs || [],
-          resume: null,
-          offer_letter: null,
-          joining_letter: null,
-          other_docs: [],
-        },
-        work_experience: data.work_experience.map((exp) => ({
+        work_start_date: data.work_start_date?.slice(0,10) || "",
+        profile_image: data.profile_image || null,
+        aadhar_document: data.aadhar_document || null,
+        pan_document: data.pan_document || null,
+        salary_details: { ...data.salary_details },
+        work_experience: data.work_experience.map(exp => ({
           ...exp,
-          experience_letter_url: exp.experience_letter || null,
-    experience_letter: null,
+          experience_letter: exp.experience_letter || null,
         })),
-      };
-
-      setFormData(formatted);
+        documents: {
+          resume: data.documents?.resume || null,
+          offer_letter: data.documents?.offer_letter || null,
+          joining_letter: data.documents?.joining_letter || null,
+          other_docs: data.documents?.other_docs || []
+        }
+      });
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -111,162 +95,167 @@ const AddEmployee = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-
     if (type === "file") {
-      // Handle file uploadsx
-      if (files.length > 0) {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: files[0],
-        }));
-      }
+      setFormData(prev => ({ ...prev, [name]: files[0] }));
     } else if (name.includes(".")) {
-      // Handle nested objects (e.g., salary_details.monthly_salary)
       const [parent, child] = name.split(".");
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
+        [parent]: { ...prev[parent], [child]: value }
       }));
     } else if (type === "checkbox") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: checked,
-      }));
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleExperienceChange = (index, e) => {
-    const { name, value, files, type } = e.target;
-    const updatedExperiences = [...formData.work_experience];
-
-    updatedExperiences[index] = {
-      ...updatedExperiences[index],
-      [name]: type === "file" ? files[0] : value,
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      work_experience: updatedExperiences,
-    }));
+  const handleExperienceChange = (i, e) => {
+    const { name, value, files } = e.target;
+    setFormData(prev => {
+      const updatedExperience = [...prev.work_experience];
+      updatedExperience[i] = {
+        ...updatedExperience[i],
+        [name]: files ? files[0] : value
+      };
+      return { ...prev, work_experience: updatedExperience };
+    });
   };
 
   const addExperience = () => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      work_experience: [
-        ...prev.work_experience,
-        { company_name: "", role: "", duration: "", experience_letter: "" },
-      ],
+      work_experience: [...prev.work_experience, { 
+        company_name: '', 
+        role: '', 
+        duration: '', 
+        experience_letter: null 
+      }]
     }));
   };
 
-  const removeExperience = (index) => {
-    const updatedExperiences = formData.work_experience.filter(
-      (_, i) => i !== index
-    );
-    setFormData((prev) => ({
+  const removeExperience = (i) => {
+    setFormData(prev => ({
       ...prev,
-      work_experience: updatedExperiences,
+      work_experience: prev.work_experience.filter((_, idx) => idx !== i)
     }));
   };
 
   const handleDocumentChange = (docType, e) => {
-    if (e.target.files.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        documents: {
-          ...prev.documents,
-          [docType]: e.target.files[0],
-        },
-      }));
-    }
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        [docType]: file
+      }
+    }));
+  };
+
+  const handleOtherDocsChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        other_docs: [...prev.documents.other_docs, ...files]
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+  
+    const fd = new FormData();
+    const payload = { ...formData };
+    
+    // Remove file references from payload
+    ['profile_image', 'aadhar_document', 'pan_document'].forEach(f => delete payload[f]);
+    
+    // Remove experience letter files from payload
+    payload.work_experience = payload.work_experience.map(({ experience_letter, ...rest }) => rest);
+    
+    // Remove document files from payload
+    payload.documents = {
+      ...payload.documents,
+      resume: payload.documents.resume?.url || null,
+      offer_letter: payload.documents.offer_letter?.url || null,
+      joining_letter: payload.documents.joining_letter?.url || null,
+      other_docs: payload.documents.other_docs
+        .filter(doc => typeof doc === 'string' || doc.url)
+        .map(doc => doc.url ? { url: doc.url, public_id: doc.public_id } : doc)
+    };
+    
+    // Stringify and append employee data
+    fd.append('employeeData', JSON.stringify(payload));
+  
+    // Append main files
+    if (formData.profile_image instanceof File) {
+      fd.append('profile_image', formData.profile_image);
+    }
+    
+    if (formData.aadhar_document instanceof File) {
+      fd.append('aadhar_document', formData.aadhar_document);
+    }
+    
+    if (formData.pan_document instanceof File) {
+      fd.append('pan_document', formData.pan_document);
+    }
+    
+    // FIXED: Append experience letters with same field name
+    formData.work_experience.forEach(exp => {
+      if (exp.experience_letter instanceof File) {
+        fd.append('experience_letter', exp.experience_letter); // SAME FIELD NAME
+      }
+    });
+    
+    // Append document files
+    ['resume', 'offer_letter', 'joining_letter'].forEach(docType => {
+      const doc = formData.documents[docType];
+      if (doc instanceof File) {
+        fd.append(docType, doc);
+      }
+    });
+    
+    // Append other documents
+    formData.documents.other_docs.forEach(doc => {
+      if (doc instanceof File) {
+        fd.append('other_docs', doc);
+      }
+    });
+  
     try {
-      console.log("profile_image:", formData.profile_image);
-console.log("aadhar_document:", formData.aadhar_document);
-      const url = isEditMode
-        ? `${API_URL}/api/employees/${employeeId}`
+      const url = isEditMode 
+        ? `${API_URL}/api/employees/${employeeId}` 
         : `${API_URL}/api/employees`;
-      const method = isEditMode ? "PUT" : "POST";
-
-      const formPayload = new FormData();
-
-      // Clean object (remove file references for JSON)
-      const cleanData = {
-        ...formData,
-        work_experience: formData.work_experience.map((exp) => ({
-          company_name: exp.company_name,
-          role: exp.role,
-          duration: exp.duration,
-        })),
-        salary_details: { ...formData.salary_details },
-        documents: {}, // only files go separately
-      };
-
-      formPayload.append("employeeData", JSON.stringify(cleanData));
-
-      // Only send new files
-      if (formData.profile_image instanceof File)
-        formPayload.append("profile_image", formData.profile_image,);
-
-      if (formData.aadhar_document instanceof File)
-        formPayload.append("aadhar_document", formData.aadhar_document);
-
-      if (formData.pan_document instanceof File)
-        formPayload.append("pan_document", formData.pan_document);
-
-      if (formData.documents.resume instanceof File)
-        formPayload.append("resume", formData.documents.resume);
-
-      if (formData.documents.offer_letter instanceof File)
-        formPayload.append("offer_letter", formData.documents.offer_letter);
-
-      if (formData.documents.joining_letter instanceof File)
-        formPayload.append("joining_letter", formData.documents.joining_letter);
-
-      if (Array.isArray(formData.documents.other_docs)) {
-        formData.documents.other_docs.forEach((doc) => {
-          if (doc instanceof File) {
-            formPayload.append("other_docs", doc);
-          }
-        });
-      }
-
-      // Experience letters
-      formData.work_experience.forEach((exp, idx) => {
-        if (exp.experience_letter instanceof File) {
-          formPayload.append(`experience_letter_${idx}`, exp.experience_letter);
-        }
+      
+      const method = isEditMode ? 'PUT' : 'POST';
+      
+      const res = await fetch(url, { 
+        method, 
+        body: fd
       });
-
-      const response = await fetch(url, {
-        method,
-        body: formPayload,
-      });
-
-      const res = await response.json();
-      if (!response.ok || !res.success) {
-        throw new Error(res.message || "Something went wrong");
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Failed to save employee');
       }
-
-      navigate("/employees");
+      
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.message || 'Failed to save employee');
+      }
+      
+      navigate('/employees');
     } catch (err) {
-      console.error("Error submitting employee:", err);
-      setError(err.message || "Submission failed");
+      console.error('Submission error:', err);
+      setError(err.message || 'An error occurred while saving');
     } finally {
       setLoading(false);
     }
@@ -326,7 +315,7 @@ console.log("aadhar_document:", formData.aadhar_document);
                   name="employee_id"
                   value={formData.employee_id}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-极 py-2 border rounded-md"
                   required
                 />
               </div>
@@ -393,7 +382,7 @@ console.log("aadhar_document:", formData.aadhar_document);
                 <input
                   type="text"
                   name="contact2"
-                  value={formData.contact2}
+                  value极={formData.contact2}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border rounded-md"
                 />
@@ -534,27 +523,7 @@ console.log("aadhar_document:", formData.aadhar_document);
               </div>
             </div>
           </div>
-          {/* {isEditMode && formData.aadhar_document?.url && (
-  <a
-    href={formData.aadhar_document.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-600 underline mt-1 block"
-  >
-    View Aadhaar Document
-  </a>
-)} */}
 
-{/* {isEditMode && formData.pan_document?.url && (
-  <a
-    href={formData.pan_document.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-600 underline mt-1 block"
-  >
-    View PAN Document
-  </a>
-)} */}
           {/* Employment Details Section */}
           <div>
             <h3 className="text-xl font-semibold mb-4 pb-2 border-b">
@@ -764,7 +733,7 @@ console.log("aadhar_document:", formData.aadhar_document);
 
           {/* Salary Details Section */}
           <div>
-            <h3 className="text-xl font-semibold mb-4 pb-2 border-b">
+            <h3 className="text-xl font-semib极 mb-4 pb-2 border-b">
               Salary Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -884,16 +853,7 @@ console.log("aadhar_document:", formData.aadhar_document);
                 <input
                   type="file"
                   multiple
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files);
-                    setFormData((prev) => ({
-                      ...prev,
-                      documents: {
-                        ...prev.documents,
-                        other_docs: [...prev.documents.other_docs, ...files],
-                      },
-                    }));
-                  }}
+                  onChange={handleOtherDocsChange}
                   className="w-full px-3 py-2 border rounded-md"
                 />
               </div>
