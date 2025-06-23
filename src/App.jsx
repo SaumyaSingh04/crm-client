@@ -15,8 +15,9 @@ import AddProject from "./pages/AddProject";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import AddEmployee from "./pages/AddEmployee";
 import ContractManagement from "./pages/ContractManagement";
-import EditContract from "./pages/EditContract"; // renamed for clarity
+import EditContract from "./pages/EditContract"; 
 import AddContract from "./pages/AddContract"; 
+import PolicyAcceptance from "./pages/PolicyManagement";
 
 function AppRoutes() {
   return (
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="contracts/create" element={<EditContract />} />               {/* general create */}
         <Route path="contracts/create/:id" element={<AddContract />} />           {/* create for selected employee */}
         <Route path="contracts/edit/:id" element={<EditContract />} />             {/* edit existing */}
+      <Route path="employee/policies" element={<PolicyAcceptance />} />
       </Route>
     </Routes>
   );

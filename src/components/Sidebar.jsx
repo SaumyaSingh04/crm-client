@@ -80,6 +80,11 @@ function Sidebar() {
                       • Terms & Conditions
                     </Link>
                   </li>
+                  <li>
+                    <Link to="/employee/policies" className="block text-md text-orange-400 hover:text-white">
+                      • Policy Document
+                    </Link>
+                  </li>
                 </ul>
               )}
             </li>

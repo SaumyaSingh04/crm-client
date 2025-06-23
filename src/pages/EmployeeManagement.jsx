@@ -8,35 +8,22 @@ function EmployeeManagement() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedExperience, setSelectedExperience] = useState(null);
   const [selectedSalary, setSelectedSalary] = useState(null);
   const [selectedDocuments, setSelectedDocuments] = useState(null);
   const [toggleError, setToggleError] = useState(null);
 
-  const limit = 10;
   const { navigate, API_URL } = useAppContext();
   const location = useLocation();
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${API_URL}/api/employees?page=${page}&limit=${limit}&search=${encodeURIComponent(searchTerm)}`
-      );
-
+      const response = await axios.get(`${API_URL}/api/employees`);
       if (response.data?.success) {
         const data = response.data.data;
-        if (Array.isArray(data)) {
-          setEmployees(data);
-          setTotalPages(1);
-        } else if (data.employees) {
-          setEmployees(data.employees);
-          setTotalPages(data.totalPages || 1);
-        } else {
-          throw new Error("Invalid employee data format");
-        }
+        const employeeArray = Array.isArray(data) ? data : data.employees || [];
+        setEmployees(employeeArray);
       } else {
         throw new Error(response.data?.message || "Failed to load employees");
       }
@@ -50,7 +37,7 @@ function EmployeeManagement() {
 
   useEffect(() => {
     fetchEmployees();
-  }, [page, searchTerm, location.key]);
+  }, [location.key]);
 
   useEffect(() => {
     document.body.style.overflow =
@@ -60,22 +47,13 @@ function EmployeeManagement() {
     };
   }, [selectedExperience, selectedSalary, selectedDocuments]);
 
-  const toggleCurrentStatus = async (id, currentStatus) => {
-    try {
-      setToggleError(null);
-      await axios.patch(`${API_URL}/api/employees/${id}/toggle-current`, {
-        is_current_employee: !currentStatus,
-      });
-      setEmployees(prev =>
-        prev.map(emp =>
-          emp._id === id ? { ...emp, is_current_employee: !currentStatus } : emp
-        )
-      );
-    } catch (err) {
-      console.error("Failed to update current status:", err);
-      setToggleError("Failed to update status. Please try again.");
-    }
-  };
+  // 🔍 Filter employees based on search
+  const filteredEmployees = employees.filter((emp) =>
+    emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.contact1?.includes(searchTerm) ||
+    emp.contact2?.includes(searchTerm)
+  );
 
   if (loading) return <div className="p-6 flex justify-center">Loading employees...</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;
@@ -122,7 +100,7 @@ function EmployeeManagement() {
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-gray-200 dark:divide-gray-600">
-              {employees.map((emp) => (
+              {filteredEmployees.map((emp) => (
                 <tr key={emp._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   {/* ID */}
                   <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/employees/add?id=${emp._id}`)}>
@@ -252,7 +230,7 @@ function EmployeeManagement() {
         </div>
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination Controls
       {employees.length > 0 && (
         <div className="flex justify-between items-center mt-4">
           <button
@@ -275,10 +253,10 @@ function EmployeeManagement() {
             Next
           </button>
         </div>
-      )}
+      )} */}
 
       {/* No employees message */}
-      {!loading && employees.length === 0 && (
+      {!loading && filteredEmployees.length === 0 && (
         <div className="text-center py-4 text-gray-500">
           No employees found
         </div>

@@ -54,6 +54,29 @@ const ContractFormPage = () => {
     return `${day} ${month} ${year}`;
   };
 
+  const handleDownload = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/employees/${id}/contract/download`,
+        { responseType: 'blob' }
+      );
+      
+      // Create blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${employee.name}_contract.pdf`);
+      document.body.appendChild(link);
+      link.click();
+// Clean up
+window.URL.revokeObjectURL(url);
+document.body.removeChild(link);
+} catch (error) {
+console.error('Download failed:', error);
+setError('Failed to download contract');
+}
+};
+
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
@@ -408,7 +431,7 @@ const ContractFormPage = () => {
             </button>
             <button
               type="button"
-             // onClick={}
+              onClick={handleDownload}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
             >
               Download Contract

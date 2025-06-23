@@ -30,13 +30,13 @@ function ContractManagement() {
 
   const handleDownload = async (id, name) => {
     try {
-      const response = await axios.get(`${API_URL}/api/employees/${id}/contract/preview`, {
+      const response = await axios.get(`${API_URL}/api/employees/${id}/contract/download`, {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${name}_contract.html`);
+      link.setAttribute("download", `${name}_contract.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
