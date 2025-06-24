@@ -100,7 +100,7 @@ function LeadManagement() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                 {filteredLeads.map((lead) => (
                   <tr
-                    key={lead.id}
+                    key={lead._id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => navigate(`/leads/add?id=${lead._id}`)}
                   >

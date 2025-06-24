@@ -1,5 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import { AppProvider } from "./context/AppContext";
+import { subscribeToPush } from "./utils/subscribeToPush";
 
 // Layout and components
 import Layout from "./components/Layout";
@@ -15,8 +17,8 @@ import AddProject from "./pages/AddProject";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import AddEmployee from "./pages/AddEmployee";
 import ContractManagement from "./pages/ContractManagement";
-import EditContract from "./pages/EditContract"; 
-import AddContract from "./pages/AddContract"; 
+import EditContract from "./pages/EditContract";
+import AddContract from "./pages/AddContract";
 import PolicyAcceptance from "./pages/PolicyManagement";
 
 function AppRoutes() {
@@ -48,16 +50,22 @@ function AppRoutes() {
 
         {/* Contract Management */}
         <Route path="contracts" element={<ContractManagement />} />
-        <Route path="contracts/create" element={<EditContract />} />               {/* general create */}
-        <Route path="contracts/create/:id" element={<AddContract />} />           {/* create for selected employee */}
-        <Route path="contracts/edit/:id" element={<EditContract />} />             {/* edit existing */}
-      <Route path="employee/policies" element={<PolicyAcceptance />} />
+        <Route path="contracts/create" element={<EditContract />} />
+        <Route path="contracts/create/:id" element={<AddContract />} />
+        <Route path="contracts/edit/:id" element={<EditContract />} />
+
+        {/* Policy */}
+        <Route path="employee/policies" element={<PolicyAcceptance />} />
       </Route>
     </Routes>
   );
 }
 
 function App() {
+  useEffect(() => {
+    subscribeToPush(); // 🔔 Auto subscribe on load
+  }, []);
+
   return (
     <BrowserRouter>
       <AppProvider>
