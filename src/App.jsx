@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useEffect } from "react";
-import { AppProvider } from "./context/AppContext";
+import { AppProvider, useAppContext } from "./context/AppContext";
 import { subscribeToPush } from "./utils/subscribeToPush";
 
 // Layout and components
@@ -20,6 +20,18 @@ import ContractManagement from "./pages/ContractManagement";
 import EditContract from "./pages/EditContract";
 import AddContract from "./pages/AddContract";
 import PolicyAcceptance from "./pages/PolicyManagement";
+
+function PushManagerInitializer() {
+  const { API_URL } = useAppContext();
+
+  useEffect(() => {
+    if (API_URL) {
+      subscribeToPush(API_URL); // ✅ Pass context value here
+    }
+  }, [API_URL]);
+
+  return null;
+}
 
 function AppRoutes() {
   return (
@@ -62,17 +74,15 @@ function AppRoutes() {
 }
 
 function App() {
-  useEffect(() => {
-    subscribeToPush(); // 🔔 Auto subscribe on load
-  }, []);
-
   return (
     <BrowserRouter>
       <AppProvider>
+        <PushManagerInitializer />
         <AppRoutes />
       </AppProvider>
     </BrowserRouter>
   );
 }
+
 
 export default App;
