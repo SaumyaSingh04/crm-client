@@ -8,11 +8,10 @@ export const subscribeToPush = async (backendUrl) => {
     console.warn("🚫 Notification permission not granted");
     return;
   }
-
   if ("serviceWorker" in navigator && "PushManager" in window) {
     try {
       const registration = await navigator.serviceWorker.register("/service-worker.js");
-
+      await navigator.serviceWorker.ready;
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) return;
 
